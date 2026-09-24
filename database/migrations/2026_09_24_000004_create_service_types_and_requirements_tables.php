@@ -1,0 +1,47 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('service_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('code')->unique(); // DTSEN, PBI, REHSOS, ...
+            $table->string('name');
+            $table->string('category')->nullable();
+            $table->text('description')->nullable();
+            $table->string('handler')->default('generic'); // generic|dtsen|pbi
+            $table->boolean('needs_assessment')->default(false);
+            $table->integer('sla_days')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        Schema::create('service_requirements', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('service_type_id')->constrained('service_types')->cascadeOnDelete();
+            $table->string('name');
+            $table->boolean('is_mandatory')->default(true);
+            $table->string('allowed_mimes')->default('pdf,jpg,png');
+            $table->integer('sort_order')->default(0);
+            $table->timestampsTz();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('service_requirements');
+        Schema::dropIfExists('service_types');
+    }
+};
